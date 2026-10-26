@@ -1,0 +1,7 @@
+# Fins de ligne Unix pour tout ce qui s'exécute sur Linux (évite les erreurs \r sous Windows)
+*.sh        text eol=lf
+*.yml       text eol=lf
+*.conf      text eol=lf
+*.ini       text eol=lf
+Dockerfile  text eol=lf
+Caddyfile   text eol=lf

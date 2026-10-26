@@ -1,0 +1,5 @@
+# Données de production : jamais dans Git
+config/data/*.sqlite
+log/
+upload/
+.env

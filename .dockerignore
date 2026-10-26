@@ -1,0 +1,13 @@
+.git
+.github
+.env
+config/data/*.sqlite
+log
+upload
+scripts
+docker-compose.yml
+Caddyfile
+readme.md
+README.md
+Dockerfile
+.dockerignore
