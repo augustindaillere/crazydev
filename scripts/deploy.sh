@@ -6,7 +6,7 @@ set -euo pipefail
 APP_DIR=/opt/crazydev
 cd "$APP_DIR"
 
-echo "==> Mise à jour de la configuration (compose, Caddyfile)"
+echo "==> Mise à jour de la configuration (docker-compose.yml)"
 git fetch --quiet origin main
 git reset --hard --quiet origin/main
 

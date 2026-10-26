@@ -6,8 +6,9 @@ log
 upload
 scripts
 docker-compose.yml
-Caddyfile
 readme.md
 README.md
 Dockerfile
 .dockerignore
+.gitignore
+.gitattributes

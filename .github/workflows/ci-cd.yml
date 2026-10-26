@@ -14,7 +14,7 @@ concurrency:
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
-  PROD_URL: https://192-162-69-165.sslip.io
+  PROD_URL: https://augustin-daillere.angers.mds-project.fr
 
 jobs:
   # ---------- CI : qualité du code ----------

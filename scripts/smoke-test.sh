@@ -28,6 +28,7 @@ check_status "/config/data/leaderboard.sqlite" 403 "Base SQLite protégée"
 check_status "/includes/header.php"            403 "Dossier includes/ protégé"
 check_status "/schemas.sql"                    403 "Schéma SQL protégé"
 check_status "/.htaccess"                      403 ".htaccess protégé"
+check_status "/docker/apache.conf"              404 "Config Docker absente du site"
 
 if curl -s "$BASE_URL/api/get_leaderboard.php" | grep -q '"success":true'; then
     echo "OK    API leaderboard renvoie success:true (base SQLite accessible en écriture)"
