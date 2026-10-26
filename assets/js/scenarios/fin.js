@@ -89,18 +89,11 @@ async function submitScore() {
 	const submitButton = document.getElementById('finish-leaderboard');
 	const feedbackElement = document.getElementById('finish-feedback');
 
-	if (!selectedPhoto?.path) {	
-		if (feedbackElement) {
-			feedbackElement.textContent = 'Veuillez sélectionner une photo avant de continuer.';
-		}
-		return;
-	}
-
 	const leaderboardData = {
 		first_name: player.prenom || '',
 		last_name: player.nom || '',
 		final_time: timing.finalTime || '',
-		photo: selectedPhoto.path,
+		photo: selectedPhoto?.path || '',
 		stopped_at: 3,
 	};
 
@@ -166,9 +159,7 @@ document.getElementById('finish-leaderboard')?.addEventListener('click', submitS
 capturePhotoForPage(6)
 	.then(() => displayFinishData())
 	.catch((error) => {
+		// Photo facultative : on affiche les résultats sans bloquer le joueur.
+		console.error(error);
 		displayFinishData();
-		const feedbackElement = document.getElementById('finish-feedback');
-		if (feedbackElement) {
-			feedbackElement.textContent = error.message;
-		}
 	});

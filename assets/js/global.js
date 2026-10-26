@@ -238,7 +238,8 @@ domReady.then(() => {
 
 		try {
 			startPageTiming();
-			await capturePhotoForPage(1);
+			// La photo est facultative : un refus de la caméra ne bloque pas la partie.
+			capturePhotoForPage(1).catch((error) => console.error(error));
 			const startResponse = await fetch('api/start_game.php', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },

@@ -18,10 +18,6 @@ $photo = trim((string) ($input['photo'] ?? ''));
 $stoppedAt = filter_var($input['stopped_at'] ?? null, FILTER_VALIDATE_INT);
 
 // Validation des données
-if ($photo === '') {
-    sendJson(['success' => false, 'error' => 'Une photo est obligatoire.'], 422);
-}
-
 if ($firstName === '' || $lastName === '' || $finalTime === '' || $stoppedAt === false) {
     sendJson(['success' => false, 'error' => 'Tous les champs sont obligatoires.'], 422);
 }
@@ -42,13 +38,16 @@ $finalTimeMs = ((int) $timeParts[1] * 60 * 1000)
     + ((int) $timeParts[2] * 1000)
     + (int) $timeParts[3];
 
-if (!preg_match('/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+\/=]+)$/', $photo, $photoParts)) {
-    sendJson(['success' => false, 'error' => 'La photo doit être envoyée au format image.'], 422);
-}
+// La photo est facultative : elle n'est validée que si elle est fournie.
+if ($photo !== '') {
+    if (!preg_match('/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+\/=]+)$/', $photo, $photoParts)) {
+        sendJson(['success' => false, 'error' => 'La photo doit être envoyée au format image.'], 422);
+    }
 
-$photoData = base64_decode($photoParts[2], true);
-if ($photoData === false || strlen($photoData) > 8 * 1024 * 1024 || getimagesizefromstring($photoData) === false) {
-    sendJson(['success' => false, 'error' => 'La photo est trop volumineuse.'], 422);
+    $photoData = base64_decode($photoParts[2], true);
+    if ($photoData === false || strlen($photoData) > 8 * 1024 * 1024 || getimagesizefromstring($photoData) === false) {
+        sendJson(['success' => false, 'error' => 'La photo est trop volumineuse.'], 422);
+    }
 }
 
 // Enregistre le score dans la base de données SQLite

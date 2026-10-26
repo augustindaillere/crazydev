@@ -11,7 +11,7 @@ $lastName = $_GET['last_name'] ?? '';
     <div class="result">
         <section>
             <h1>Résultats de <span id="finish-player"><?php echo htmlspecialchars($firstName . ' ' . $lastName); ?></span></h1>
-            <p>Nous avons pris 6 photos pendant que vous jouiez. Choisissez celle qui apparaitra dans le leaderboard.</p>
+            <p>Nous avons pris 6 photos pendant que vous jouiez. Choisissez celle qui apparaitra dans le leaderboard (facultatif).</p>
         </section>
         <section>
             <p>Temps final</p>
