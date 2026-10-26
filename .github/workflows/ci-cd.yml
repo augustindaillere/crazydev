@@ -14,7 +14,7 @@ concurrency:
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
-  PROD_URL: https://augustin-daillere.angers.mds-project.fr
+  PROD_URL: http://192.162.69.165
 
 jobs:
   # ---------- CI : qualité du code ----------
