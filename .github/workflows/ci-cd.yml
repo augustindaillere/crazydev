@@ -11,7 +11,7 @@ on:
 
 env:
   PROD_URL: http://augustin-daillere.angers.mds-project.fr
-  PREPROD_URL: http://preprod.augustin-daillere.angers.mds-project.fr
+  PREPROD_URL: http://augustin-daillere.angers.mds-project.fr:8090
 
 jobs:
   # 1. Tests unitaires : toujours lancés, bloquent tout le reste s'ils échouent
@@ -104,3 +104,6 @@ jobs:
         run: |
           for i in $(seq 1 12); do
             curl -fsS -o /dev/null
+
+
+            
