@@ -1,13 +1,13 @@
 services:
   app:
-    image: crazydev:latest
+    image: crazydev:${APP_ENV:-prod}
     build: .
     restart: unless-stopped
     ports:
       # Accessible uniquement depuis le VPS : c'est Nginx qui l'expose sur Internet
-      - "127.0.0.1:8080:80"
+      - "127.0.0.1:${APP_PORT:-8080}:80"
     volumes:
-      - app-data:/var/www/html/config/data   # base SQLite (persiste entre les déploiements)
+      - app-data:/var/www/html/config/data   # base SQLite (une par environnement)
       - app-logs:/var/www/html/log
 
 volumes:

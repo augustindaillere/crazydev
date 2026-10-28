@@ -3,3 +3,5 @@ config/data/*.sqlite
 log/
 upload/
 .env
+vendor/
+.phpunit.result.cache

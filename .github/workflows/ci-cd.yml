@@ -1,29 +1,61 @@
-name: Déploiement continu
+name: CI/CD
 
+# PR vers preprod/main -> tests seulement
+# Push sur preprod/main (= PR fusionnée) -> tests PUIS déploiement de l'environnement correspondant
 on:
+  pull_request:
+    branches: [preprod, main]
   push:
-    branches: [main]
+    branches: [preprod, main]
   workflow_dispatch:
 
-# Un seul déploiement à la fois : un nouveau push attend la fin du précédent
-concurrency:
-  group: deploy-production
-  cancel-in-progress: false
-
 env:
-  PROD_URL: http://192.162.69.165
+  PROD_URL: http://augustin-daillere.angers.mds-project.fr
+  PREPROD_URL: http://preprod.augustin-daillere.angers.mds-project.fr
 
 jobs:
-  deploy:
-    name: Déploiement en production
+  # 1. Tests unitaires : toujours lancés, bloquent tout le reste s'ils échouent
+  tests:
+    name: Tests unitaires
     runs-on: ubuntu-latest
-    environment:
-      name: production
-      url: ${{ env.PROD_URL }}
     steps:
-      - name: Récupération du dépôt
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Installation de PHP 8.3 (même version que l'image Docker)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Installation de PHPUnit
+        run: composer install --no-interaction --no-progress
+      - name: Lancement des tests
+        run: vendor/bin/phpunit --testdox
 
+  # 2. Une PR vers main doit venir de preprod
+  pr-source:
+    name: Origine de la PR
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          if [ "${{ github.head_ref }}" != "preprod" ]; then
+            echo "::error::Une PR vers main doit venir de preprod (ici : ${{ github.head_ref }})"
+            exit 1
+          fi
+
+  # 3. Déploiement préprod : push sur preprod + tests verts
+  deploy-preprod:
+    name: Déploiement en pré-production
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/preprod'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-preprod
+      cancel-in-progress: false
+    environment:
+      name: preprod
+      url: ${{ env.PREPROD_URL }}
+    steps:
+      - uses: actions/checkout@v4
       - name: Configuration de la clé SSH
         env:
           SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
@@ -33,15 +65,42 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-
       - name: Déploiement sur le VPS
-        run: ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'bash -s' < scripts/deploy.sh
+        run: ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'bash -s' -- preprod /opt/crazydev-preprod < scripts/deploy.sh
+      - name: Vérification que la préprod répond
+        run: |
+          for i in $(seq 1 12); do
+            curl -fsS -o /dev/null "$PREPROD_URL/" && echo "Préprod en ligne" && exit 0
+            sleep 5
+          done
+          exit 1
 
+  # 4. Déploiement prod : push sur main + tests verts
+  deploy-prod:
+    name: Déploiement en production
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    environment:
+      name: production
+      url: ${{ env.PROD_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configuration de la clé SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Déploiement sur le VPS
+        run: ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" 'bash -s' -- main /opt/crazydev < scripts/deploy.sh
       - name: Vérification que le site répond
         run: |
           for i in $(seq 1 12); do
-            if curl -fsS -o /dev/null "$PROD_URL/"; then echo "Site en ligne : $PROD_URL"; exit 0; fi
-            sleep 5
-          done
-          echo "Le site ne répond pas après le déploiement"
-          exit 1
+            curl -fsS -o /dev/null
