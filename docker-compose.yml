@@ -1,6 +1,6 @@
 services:
   app:
-    image: ghcr.io/augustindaillere/crazydev:${IMAGE_TAG:-latest}
+    image: crazydev:latest
     build: .
     restart: unless-stopped
     ports:

@@ -1,25 +1,16 @@
 #!/usr/bin/env bash
-# Exécuté SUR LE VPS par GitHub Actions (via SSH).
-# Variables fournies par le pipeline : IMAGE_TAG, GHCR_USER, GHCR_TOKEN
+# Exécuté SUR LE VPS par GitHub Actions (via SSH)
 set -euo pipefail
 
-APP_DIR=/opt/crazydev
-cd "$APP_DIR"
+cd /opt/crazydev
 
-echo "==> Mise à jour de la configuration (docker-compose.yml)"
+echo "==> Récupération de la dernière version du code"
 git fetch --quiet origin main
 git reset --hard --quiet origin/main
+git log --oneline -1
 
-echo "==> Version déployée : $IMAGE_TAG"
-printf 'IMAGE_TAG=%s\n' "$IMAGE_TAG" > .env
-
-echo "==> Téléchargement de l'image depuis GHCR"
-echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin >/dev/null
-docker compose pull app
-docker logout ghcr.io >/dev/null
-
-echo "==> Redémarrage des conteneurs (sans coupure de la base : volume persistant)"
-docker compose up -d --remove-orphans
+echo "==> Reconstruction de l'image et redémarrage du conteneur"
+docker compose up -d --build --remove-orphans
 
 echo "==> Nettoyage des anciennes images"
 docker image prune -f >/dev/null
