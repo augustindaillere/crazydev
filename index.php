@@ -19,7 +19,7 @@ getDatabase();
     <div id="popup-inscription" class="popup-overlay"> 
         <div class="popup-header">
           
-          <h2>Inscription Déployé automatiquement par GitHub Actions </h2>
+          <h2>Inscription Déployé automatiquement par GitHub Actions</h2>
         </div>    
       <form id="form-inscription">
         <label>Prénom : <input type="text" id="prenom" required></label>
